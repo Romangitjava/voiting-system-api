@@ -1,19 +1,23 @@
 package com.example.topjava.domain;
 
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 
 @Entity
+@Cacheable
+@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class Dish {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    @NotNull(message = "Please enter a dish")
     private String dish;
 
+    @NotNull(message = "Please enter a price")
     private int price;
 
     @JsonIgnore
@@ -28,6 +32,16 @@ public class Dish {
         this.dish = dish;
         this.price = price;
         this.menu = menu;
+    }
+
+    @Override
+    public String toString() {
+        return "Dish{" +
+                "id=" + id +
+                ", dish='" + dish + '\'' +
+                ", price=" + price +
+                ", menu=" + menu +
+                '}';
     }
 
     public Long getId() {

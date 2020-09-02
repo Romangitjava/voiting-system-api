@@ -13,14 +13,13 @@ public class User {
     private String username;
     private String password;
 
-
-    @OneToMany(mappedBy = "user")
-    private Set<RestaurantRating> ratings;
-
     @ElementCollection(targetClass = Role.class, fetch = FetchType.EAGER)
     @CollectionTable(name = "user_role", joinColumns = @JoinColumn(name = "user_id"))
     @Enumerated(EnumType.STRING)
     private Set<Role> roles;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private Set<RestaurantRating> restaurantRatings;
 
     public User() {}
 
@@ -36,7 +35,6 @@ public class User {
                 "id=" + id +
                 ", username='" + username + '\'' +
                 ", password='" + password + '\'' +
-                ", ratings=" + ratings +
                 ", roles=" + roles +
                 '}';
     }
@@ -63,14 +61,6 @@ public class User {
 
     public void setPassword(String password) {
         this.password = password;
-    }
-
-    public Set<RestaurantRating> getRatings() {
-        return ratings;
-    }
-
-    public void setRatings(Set<RestaurantRating> ratings) {
-        this.ratings = ratings;
     }
 
     public Set<Role> getRoles() {

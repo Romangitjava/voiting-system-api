@@ -1,12 +1,15 @@
 package com.example.topjava.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
 import java.time.LocalDate;
 import java.util.List;
 
 @Entity
+@Cacheable
+@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class Menu {
 
     @Id
@@ -15,7 +18,9 @@ public class Menu {
 
     private LocalDate creationTime;
 
-    @OneToMany(mappedBy = "menu")
+
+    @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+    @OneToMany(mappedBy = "menu", cascade = CascadeType.ALL)
     private List<Dish> dishes ;
 
     @JsonIgnore
@@ -30,6 +35,16 @@ public class Menu {
         this.creationTime = creationTime;
         this.dishes = dishes;
         this.restaurant = restaurant;
+    }
+
+    @Override
+    public String toString() {
+        return "Menu{" +
+                "id=" + id +
+                ", creationTime=" + creationTime +
+                ", dishes=" + dishes +
+                ", restaurant=" + restaurant +
+                '}';
     }
 
     public Long getId() {

@@ -1,25 +1,27 @@
 package com.example.topjava.initDB;
 
-import com.example.topjava.domain.Dish;
-import com.example.topjava.domain.Menu;
-import com.example.topjava.domain.Restaurant;
+import com.example.topjava.domain.*;
 import com.example.topjava.repository.DishRepository;
 import com.example.topjava.repository.MenuRepository;
 import com.example.topjava.repository.RestaurantRepository;
+import com.example.topjava.repository.UserRepository;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 
 @Component
 public class DataLoader implements ApplicationRunner {
+    private final UserRepository userRepository;
     private final RestaurantRepository restaurantRepository;
     private final MenuRepository menuRepository;
     private final DishRepository dishRepository;
 
-    public DataLoader(RestaurantRepository restaurantRepository, MenuRepository menuRepository, DishRepository dishRepository) {
+    public DataLoader(UserRepository userRepository, RestaurantRepository restaurantRepository, MenuRepository menuRepository, DishRepository dishRepository) {
+        this.userRepository = userRepository;
         this.restaurantRepository = restaurantRepository;
         this.menuRepository = menuRepository;
         this.dishRepository = dishRepository;
@@ -27,6 +29,9 @@ public class DataLoader implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
+
+        userRepository.save(new User("admin", "777", Collections.singleton(Role.ADMIN)));
+        userRepository.save(new User("user", "000", Collections.singleton(Role.USER)));
 
         Restaurant pizzaStore = restaurantRepository.save(new Restaurant("pizza_store"));
         Restaurant sushiStore = restaurantRepository.save(new Restaurant("sushi_store"));

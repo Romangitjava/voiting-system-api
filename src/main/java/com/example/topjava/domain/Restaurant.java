@@ -1,29 +1,35 @@
 package com.example.topjava.domain;
 
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.util.List;
 import java.util.Set;
 
 @Entity
+@Cacheable
+@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class Restaurant {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    @NotNull(message = "Please, enter the name of the restaurant")
     private String name;
 
-    @OneToMany(mappedBy = "restaurant")
+
+    @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+    @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL)
     private List<Menu> menu;
 
-    @OneToMany(mappedBy = "restaurant")
-    private Set<RestaurantRating> ratings;
+
+    @org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+    @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private Set<RestaurantRating> restaurantRatings;
 
     public Restaurant() {
-    }
-
-    public Restaurant(String name) {
-        this.name = name;
     }
 
     @Override
@@ -32,8 +38,12 @@ public class Restaurant {
                 "id=" + id +
                 ", name='" + name + '\'' +
                 ", menu=" + menu +
-                ", ratings=" + ratings +
+                ", ratings=" + restaurantRatings +
                 '}';
+    }
+
+    public Restaurant(String name) {
+        this.name = name;
     }
 
     public Long getId() {
@@ -60,12 +70,11 @@ public class Restaurant {
         this.menu = menu;
     }
 
-    public Set<RestaurantRating> getRatings() {
-        return ratings;
+    public Set<RestaurantRating> getRestaurantRatings() {
+        return restaurantRatings;
     }
 
-    public void setRatings(Set<RestaurantRating> ratings) {
-        this.ratings = ratings;
+    public void setRestaurantRatings(Set<RestaurantRating> restaurantRatings) {
+        this.restaurantRatings = restaurantRatings;
     }
-
 }

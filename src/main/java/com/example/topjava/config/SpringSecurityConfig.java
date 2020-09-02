@@ -1,6 +1,5 @@
 package com.example.topjava.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -8,49 +7,48 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 
+import javax.sql.DataSource;
 
 @Configuration
 @EnableWebSecurity
 public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 
+    private final DataSource dataSource;
+
+    public SpringSecurityConfig(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
+
     @Override
-    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.inMemoryAuthentication()
-                .withUser("user").password("{noop}password").roles("USER")
-                .and()
-                .withUser("admin").password("{noop}password").roles("USER", "ADMIN");
+    public void configure(AuthenticationManagerBuilder auth) throws Exception {
+        auth.jdbcAuthentication().dataSource(dataSource).withDefaultSchema()
+                .usersByUsernameQuery(
+                        "select username, password, 'true' from users where username=?")
+                .authoritiesByUsernameQuery(
+                        "select u.username, ur.roles from users u inner join user_role ur on u.id = ur.user_id where u.username=?");
     }
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
-                .httpBasic()
-                .and()
-                .authorizeRequests()
-                .antMatchers(HttpMethod.GET, "/restaurants/**").hasRole("USER")
-                .antMatchers(HttpMethod.POST, "/restaurants").hasRole("ADMIN")
-                .antMatchers(HttpMethod.PUT, "/restaurants/**").hasRole("ADMIN")
-                .antMatchers(HttpMethod.PATCH, "/restaurants/**").hasRole("ADMIN")
-                .antMatchers(HttpMethod.DELETE, "/restaurants/**").hasRole("ADMIN")
-                .and()
                 .csrf().disable()
-                .formLogin().disable();
+                .sessionManagement().disable()
+                .authorizeRequests()
+                .antMatchers(HttpMethod.GET).hasAnyAuthority("USER", "ADMIN")
+                .antMatchers(HttpMethod.POST, "/restaurants/{restaurant_id}/ratings/**")
+                    .hasAnyAuthority("USER")
+                .anyRequest().hasAnyAuthority("ADMIN")
+                .and().httpBasic();
     }
 
     @Bean
-    public UserDetailsService userDetailsService() {
-        //ok for demo
-        User.UserBuilder users = User.withDefaultPasswordEncoder();
-
-        InMemoryUserDetailsManager manager = new InMemoryUserDetailsManager();
-        manager.createUser(users.username("user").password("password").roles("USER").build());
-        manager.createUser(users.username("admin").password("password").roles("USER", "ADMIN").build());
-        return manager;
+    public PasswordEncoder passwordEncoder() {
+        return  NoOpPasswordEncoder.getInstance();
     }
+
 }
+
+

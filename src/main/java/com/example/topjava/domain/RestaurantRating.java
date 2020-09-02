@@ -1,41 +1,50 @@
 package com.example.topjava.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.validator.constraints.Range;
 import javax.persistence.*;
 
+
 @Entity
+@Cacheable
+@org.hibernate.annotations.Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 public class RestaurantRating {
-    @EmbeddedId
-    private RestaurantRatingKey id;
 
-    @ManyToOne
-    @MapsId("user_id")
-    @JoinColumn(name = "user_id")
-    private User user;
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
 
+    @Range(max = 5, message = "Please, enter a value between one and five")
+    private Integer rating;
+
+    @JsonIgnore
     @ManyToOne
-    @MapsId("restaurant_id")
     @JoinColumn(name = "restaurant_id")
     private Restaurant restaurant;
 
-    private int rating;
+    @JsonIgnore
+    @ManyToOne
+    @JoinColumn(name = "user_id", unique = true)
+    private User user;
 
     public RestaurantRating() {
     }
 
-    public RestaurantRatingKey getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(RestaurantRatingKey id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
-    public User getUser() {
-        return user;
+    public Integer getRating() {
+        return rating;
     }
 
-    public void setUser(User user) {
-        this.user = user;
+    public void setRating(Integer rating) {
+        this.rating = rating;
     }
 
     public Restaurant getRestaurant() {
@@ -46,11 +55,11 @@ public class RestaurantRating {
         this.restaurant = restaurant;
     }
 
-    public int getRating() {
-        return rating;
+    public User getUser() {
+        return user;
     }
 
-    public void setRating(int rating) {
-        this.rating = rating;
+    public void setUser(User user) {
+        this.user = user;
     }
 }
